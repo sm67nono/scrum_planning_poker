@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Sprint Planning Poker</title>
+    <style>
+      #cards{margin-top: 10%;}
+      #showPolls{margin-top:20%}
+     .numbers{
+              background-color: lightgrey;
+              width: 300px;
+              border: 2px solid rgb(0, 0, 0);
+              padding: 30px;
+              margin: 10px;
+            }
+    </style>
+  </head>
+  <body>
+    <h1><center>Sprint Planning Poker</center></h1>
+    <center>Users Online : <div id='userCount'></div> </center>
+    <br/>
+    <center><button onclick="sendReveal()">Reveal</button></center>
+    <br/>
+    <br/>
+    <center><button onclick="sendReset()">Reset</button></center>
+    <div id="cards">
+      <span class="numbers" onclick="send2Server(1)">1</span>
+      <span class="numbers" onclick="send2Server(2)">2</span>
+      <span class="numbers" onclick="send2Server(3)">3</span>
+      <span class="numbers" onclick="send2Server(5)">5</span>  
+      <span class="numbers" onclick="send2Server(8)">8</span>
+      <span class="numbers" onclick="send2Server(13)">13</span>
+      <span class="numbers" onclick="send2Server(21)">21</span>
+      <span class="numbers" onclick="send2Server(34)">34</span>
+      <span class="numbers" onclick="send2Server(55)">55</span>
+      <span class="numbers" onclick="send2Server(89)">89</span>
+    </div>
+    
+    <div id="showPolls">
+
+    </div>
+    </body>
+   
+    <script src="/socket.io/socket.io.js"></script>
+<script>
+  var reveal = false;
+  var socket = io();
+  var show ='';
+  var hide='';
+
+  function send2Server(val)
+  {
+    socket.emit('vote',val);
+  }
+
+  function sendReveal()
+  {
+    socket.emit('reveal',1);
+  }
+
+  function sendReset()
+  {
+    socket.emit('reset',1);
+  }
+
+  socket.on('show', function(msg){
+    document.querySelector("#showPolls").innerHTML = show;
+  });
+
+  socket.on('resetall', function(msg){
+    reveal=false;
+    show="";
+    hide="";
+    document.querySelector("#showPolls").innerHTML ="";
+  });
+  
+  socket.on('polls', function(msg){
+    //console.log(JSON.stringify(msg));
+    let k = Object.keys(msg);
+    show='';
+    hide='';
+    for (let key of k)
+    {
+      hide+='<span class="numbers">X</span>';
+      show+='<span class="numbers">'+msg[key]+'</span>';
+    }
+     if(!reveal)
+      {
+        document.querySelector("#showPolls").innerHTML = hide;
+      }
+      else{
+        document.querySelector("#showPolls").innerHTML = show;
+      }
+  }
+  );
+
+
+  socket.on('Users', function(msg) {
+    document.getElementById('userCount').innerHTML = msg;
+  });
+
+</script>
+</html>
